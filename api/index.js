@@ -1,6 +1,6 @@
 // =================================================================
-//                 Server-Side Logic (Vercel-friendly)
-//                 Now using Application Auth
+//                 Server-Side Logic (Vercel-friendly)
+//                 Now using Application Auth
 // =================================================================
 const express = require('express');
 const axios = require('axios');
@@ -8,10 +8,8 @@ const path = require('path');
 // require('dotenv').config(); // Uncomment this line for local development if you have a .env file
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..')));
 
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = process.env.TILTIFY_CLIENT_ID;
@@ -24,12 +22,12 @@ let accessToken = null;
 let tokenExpiry = null;
 
 // =================================================================
-//                 Server Functions
+//                 Server Functions
 // =================================================================
 
 /**
- * Get a valid application access token using Client Credentials flow
- */
+ * Get a valid application access token using Client Credentials flow
+ */
 async function getAccessToken() {
     // Check if we have a valid token
     if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
@@ -50,7 +48,6 @@ async function getAccessToken() {
 
     } catch (error) {
         console.error('Error fetching application access token:');
-        // This is the key change: log the full error response for debugging
         if (error.response) {
             console.error('Response data:', error.response.data);
             console.error('Response status:', error.response.status);
@@ -63,9 +60,8 @@ async function getAccessToken() {
 }
 
 /**
- * Helper function to fetch data from the Tiltify API's donations endpoint.
- * This is the single source of truth for donation data.
- */
+ * Helper function to fetch data from the Tiltify API's donations endpoint.
+ */
 async function fetchTiltifyData() {
     try {
         const token = await getAccessToken(); // Get the application token
@@ -82,12 +78,12 @@ async function fetchTiltifyData() {
 }
 
 // =================================================================
-//                 Server Endpoints
+//                 Server Endpoints
 // =================================================================
 
 /**
- * Endpoint to get the total donations for a campaign by summing all donations.
- */
+ * Endpoint to get the total donations for a campaign by summing all donations.
+ */
 app.get('/api/donations/total', async (req, res) => {
     try {
         const data = await fetchTiltifyData();
@@ -102,8 +98,8 @@ app.get('/api/donations/total', async (req, res) => {
 });
 
 /**
- * Endpoint to get recent donations for a campaign.
- */
+ * Endpoint to get recent donations for a campaign.
+ */
 app.get('/api/donations', async (req, res) => {
     try {
         const data = await fetchTiltifyData();
@@ -111,11 +107,6 @@ app.get('/api/donations', async (req, res) => {
     } catch (error) {
         res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
     }
-});
-
-// A catch-all route to serve all static files, including index.html, from the root directory
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', req.originalUrl));
 });
 
 // IMPORTANT: For Vercel to work, you must export the Express app.
