@@ -1,5 +1,5 @@
 // =================================================================
-//                 Server-Side Logic
+//                 Server-Side Logic
 // =================================================================
 const express = require('express');
 const axios = require('axios');
@@ -15,55 +15,60 @@ app.use(express.static(path.join(__dirname, 'public'))); // Assuming your index.
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
 const CLIENT_SECRET = process.env.TILTIFY_CLIENT_SECRET; // This must be a GitHub Secret!
-const REDIRECT_URI = 'https://jiggy2204.github.io/sirkrisfundraiser/';
 const TILTIFY_API_URL = 'https://v5api.tiltify.com';
 
+// Store access token and its expiry time
+let accessToken = null;
+let tokenExpiry = null;
+
 // =================================================================
-//                 Server Endpoints
+//                 Server Functions
 // =================================================================
 
 /**
- * Endpoint to exchange the authorization code for an access token.
- * This is the only place where the CLIENT_SECRET should be used.
+ * Get a valid access token using Client Credentials flow
  */
-app.post('/api/token', async (req, res) => {
-    const { code } = req.body;
-    if (!code) {
-        return res.status(400).send({ error: 'Authorization code is missing.' });
+async function getAccessToken() {
+    // Check if we have a valid token
+    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return accessToken;
     }
 
     try {
+        console.log('Fetching new access token...');
         const tokenResponse = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
-            grant_type: 'authorization_code',
+            grant_type: 'client_credentials',
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
-            redirect_uri: REDIRECT_URI,
-            code: code,
+            scope: 'public'
         });
 
-        // Tiltify's response should contain the access token
-        res.json(tokenResponse.data);
+        accessToken = tokenResponse.data.access_token;
+        // Set expiry time (subtract 5 minutes for safety)
+        const expiresIn = tokenResponse.data.expires_in || 3600; // Default 1 hour
+        tokenExpiry = Date.now() + (expiresIn - 300) * 1000;
+        
+        console.log('Access token obtained successfully');
+        return accessToken;
 
     } catch (error) {
-        console.error('Token exchange failed:', error.response ? error.response.data : error.message);
-        res.status(500).send({
-            error: `Token exchange failed: ${error.response ? error.response.status : 'Network error'} - ${JSON.stringify(error.response ? error.response.data : 'No response data')}`,
-            details: 'Check server logs for more information'
-        });
+        console.error('Failed to get access token:', error.response ? error.response.data : error.message);
+        throw new Error('Authentication failed');
     }
-});
+}
 
 /**
- * Helper function to fetch data from the Tiltify API using the provided access token.
- * We'll use a placeholder for the campaign ID for now.
- * In a real-world app, you might get this dynamically or from a config file.
+ * Helper function to fetch data from the Tiltify API using the stored access token.
+ * Replace 'your_campaign_id_here' with your actual campaign ID
  */
-async function fetchTiltifyData(endpoint, accessToken) {
+async function fetchTiltifyData(endpoint) {
     const campaignId = 'your_campaign_id_here'; // Replace with your actual campaign ID
+    
     try {
+        const token = await getAccessToken();
         const response = await axios.get(`${TILTIFY_API_URL}/api/v5/campaigns/${campaignId}${endpoint}`, {
             headers: {
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${token}`
             }
         });
         return response.data;
@@ -73,41 +78,32 @@ async function fetchTiltifyData(endpoint, accessToken) {
     }
 }
 
+// =================================================================
+//                 Server Endpoints
+// =================================================================
+
 /**
  * Endpoint to get the total donations for a campaign.
- * It expects the access token to be passed in a query parameter or header.
- * For simplicity, we are using the Authorization header.
  */
 app.get('/api/donations/total', async (req, res) => {
-    const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
-
-    if (!accessToken) {
-        return res.status(401).send({ error: 'Access token is missing.' });
-    }
-
     try {
-        const data = await fetchTiltifyData('', accessToken);
+        const data = await fetchTiltifyData('');
         res.json({ total_amount: data.data.total_amount.value });
     } catch (error) {
+        console.error('Error fetching total donations:', error);
         res.status(500).send({ error: `Failed to fetch total donations: ${error.message}` });
     }
 });
 
 /**
  * Endpoint to get recent donations for a campaign.
- * It expects the access token to be passed in a query parameter or header.
  */
 app.get('/api/donations', async (req, res) => {
-    const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
-
-    if (!accessToken) {
-        return res.status(401).send({ error: 'Access token is missing.' });
-    }
-
     try {
-        const data = await fetchTiltifyData('/donations', accessToken);
+        const data = await fetchTiltifyData('/donations');
         res.json(data);
     } catch (error) {
+        console.error('Error fetching donations:', error);
         res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
     }
 });
