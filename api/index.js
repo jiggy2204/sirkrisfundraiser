@@ -87,11 +87,20 @@ async function fetchTiltifyData() {
 app.post('/api/token', async (req, res) => {
     try {
         const { code } = req.body;
+
+        if (!code) {
+            return res.status(400).send({ error: 'Missing authorization code.' });
+        }
+
+        // IMPORTANT: The redirect_uri must exactly match the one used in the initial request!
+        const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app'; 
+
         const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
             grant_type: 'authorization_code',
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
-            code: code
+            code: code,
+            redirect_uri: REDIRECT_URI // Add redirect URI to token exchange
         });
         res.json(response.data);
     } catch (error) {
