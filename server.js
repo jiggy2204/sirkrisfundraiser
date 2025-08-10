@@ -88,7 +88,7 @@ app.get('/api/donations/total', async (req, res) => {
     }
 
     try {
-        const data = await fetchTiltifyData('', accessToken);
+        const data = await fetchTiltifyData('/donations', accessToken);
         res.json({ total_amount: data.data.total_amount.value });
     } catch (error) {
         res.status(500).send({ error: `Failed to fetch total donations: ${error.message}` });
