@@ -29,52 +29,52 @@ let tokenExpiry = null;
  * Get a valid application access token using Client Credentials flow
  */
 async function getAccessToken() {
-    // Check if we have a valid token
-    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
-        return accessToken;
-    }
+    // Check if we have a valid token
+    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return accessToken;
+    }
 
-    try {
-        const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
-            grant_type: 'client_credentials',
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET
-        });
-        
-        accessToken = response.data.access_token;
-        // Set expiry to 1 minute before the actual expiry to be safe
-        tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
-        return accessToken;
+    try {
+        const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
+            grant_type: 'client_credentials',
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET
+        });
+        
+        accessToken = response.data.access_token;
+        // Set expiry to 1 minute before the actual expiry to be safe
+        tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
+        return accessToken;
 
-    } catch (error) {
-        console.error('Error fetching application access token:');
-        if (error.response) {
-            console.error('Response data:', error.response.data);
-            console.error('Response status:', error.response.status);
-            console.error('Response headers:', error.response.headers);
-        } else {
-            console.error('Error message:', error.message);
-        }
-        throw new Error('Failed to get application access token.');
-    }
+    } catch (error) {
+        console.error('Error fetching application access token:');
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+        } else {
+            console.error('Error message:', error.message);
+        }
+        throw new Error('Failed to get application access token.');
+    }
 }
 
 /**
  * Helper function to fetch data from the Tiltify API's donations endpoint.
  */
 async function fetchTiltifyData() {
-    try {
-        const token = await getAccessToken(); // Get the application token
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching from Tiltify API: ${error.response ? error.response.data : error.message}`);
-        throw new Error(`API fetch error: ${error.response ? error.response.status : 'Network error'}`);
-    }
+    try {
+        const token = await getAccessToken(); // Get the application token
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching from Tiltify API: ${error.response ? error.response.data : error.message}`);
+        throw new Error(`API fetch error: ${error.response ? error.response.status : 'Network error'}`);
+    }
 }
 
 // =================================================================
@@ -82,31 +82,51 @@ async function fetchTiltifyData() {
 // =================================================================
 
 /**
+ * Endpoint to exchange an authorization code for an access token.
+ */
+app.post('/api/token', async (req, res) => {
+    try {
+        const { code } = req.body;
+        const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
+            grant_type: 'authorization_code',
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            code: code
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error exchanging authorization code for token:', error.response ? error.response.data : error.message);
+        res.status(500).send({ error: 'Failed to exchange authorization code for token' });
+    }
+});
+
+
+/**
  * Endpoint to get the total donations for a campaign by summing all donations.
  */
 app.get('/api/donations/total', async (req, res) => {
-    try {
-        const data = await fetchTiltifyData();
-        // Calculate the total amount from the donations data
-        const totalAmount = data.data.reduce((sum, donation) => {
-            return sum + parseFloat(donation.amount.value);
-        }, 0);
-        res.json({ total_amount: totalAmount });
-    } catch (error) {
-        res.status(500).send({ error: `Failed to fetch total donations: ${error.message}` });
-    }
+    try {
+        const data = await fetchTiltifyData();
+        // Calculate the total amount from the donations data
+        const totalAmount = data.data.reduce((sum, donation) => {
+            return sum + parseFloat(donation.amount.value);
+        }, 0);
+        res.json({ total_amount: totalAmount });
+    } catch (error) {
+        res.status(500).send({ error: `Failed to fetch total donations: ${error.message}` });
+    }
 });
 
 /**
  * Endpoint to get recent donations for a campaign.
  */
 app.get('/api/donations', async (req, res) => {
-    try {
-        const data = await fetchTiltifyData();
-        res.json(data);
-    } catch (error) {
-        res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
-    }
+    try {
+        const data = await fetchTiltifyData();
+        res.json(data);
+    } catch (error) {
+        res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
+    }
 });
 
 // IMPORTANT: For Vercel to work, you must export the Express app.
