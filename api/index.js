@@ -110,7 +110,7 @@ app.get('/api/donations', async (req, res) => {
 });
 
 // A catch-all route to serve your index.html
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
