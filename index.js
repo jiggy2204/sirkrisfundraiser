@@ -4,6 +4,7 @@
 
 const appContainer = document.getElementById('app-container');
 const preloadingBlock = document.getElementById('preloadingBlock');
+const loadingBlock = document.getElementById('loadingBlock');
 const totalDonationsElement = document.getElementById('totalDonations');
 const donationListElement = document.getElementById('donationList');
 
@@ -70,6 +71,11 @@ async function renderDashboard() {
         // Show loading state
         if (preloadingBlock) {
             preloadingBlock.style.display = 'none';
+        }
+
+                // Show loading state
+        if (loadingBlock) {
+            loadingBlock.style.display = 'none';
         }
 
         // Fetch total donations
