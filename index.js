@@ -7,6 +7,63 @@ const preloadingBlock = document.getElementById('preloadingBlock');
 const totalDonationsElement = document.getElementById('totalDonations');
 const donationListElement = document.getElementById('donationList');
 
+// Determine the base URL for API calls.
+const BASE_API_URL = window.location.origin;
+
+// IMPORTANT: Update this REDIRECT_URI to your Vercel URL.
+const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app/';
+const AUTHORIZE_URL = 'https://v5api.tiltify.com/oauth/authorize';
+const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
+const tokenKey = 'tiltify_access_token';
+
+/**
+ * Initiates the authorization process by redirecting the user to Tiltify.
+ */
+function redirectToTiltify() {
+    const authUrl = `${AUTHORIZE_URL}?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=public`;
+    window.location.href = authUrl;
+}
+
+/**
+ * Handles the OAuth callback. Extracts the authorization code and exchanges it for a token.
+ * @param {string} code The authorization code from the URL.
+ */
+async function handleCallback(code) {
+    try {
+        // Display loading state
+        appContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="width: 3rem; height: 3rem; border: 4px solid #e2e8f0; border-top-color: #6366f1; border-radius: 9999px; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+                <p style="font-size: 1.125rem; color: #4b5563;">Exchanging authorization code...</p>
+            </div>
+        `;
+
+        const response = await fetch(`${BASE_API_URL}/api/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorData}`);
+        }
+
+        const data = await response.json();
+        localStorage.setItem(tokenKey, data.access_token);
+        // Redirect to clean the URL and load the dashboard
+        window.history.pushState({}, '', REDIRECT_URI);
+        renderDashboard();
+
+    } catch (error) {
+        console.error('Token exchange failed:', error);
+        appContainer.innerHTML = `
+            <p style="color: #ef4444; margin-bottom: 1rem;">❌ Connection failed: ${error.message}</p>
+            <p><a href="${REDIRECT_URI}" style="color: #4f46e5; text-decoration: underline;">Try again</a></p>
+        `;
+    }
+}
+
 /**
  * Fetches and displays the total donation amount and a list of donations.
  */
@@ -16,7 +73,7 @@ async function renderDashboard() {
         document.getElementById('loadingBlock').style.display = 'block';
         
         // Fetch total donations
-        const totalResponse = await fetch('/api/donations/total');
+        const totalResponse = await fetch(`${BASE_API_URL}/api/donations/total`);
         if (!totalResponse.ok) {
             throw new Error(`Failed to fetch total donations: ${totalResponse.status}`);
         }
@@ -26,7 +83,7 @@ async function renderDashboard() {
         document.getElementById('totalDonations').innerHTML = `$${parseFloat(totalData.total_amount).toFixed(2)}`;
 
         // Fetch recent donations
-        const donationsResponse = await fetch('/api/donations');
+        const donationsResponse = await fetch(`${BASE_API_URL}/api/donations`);
         if (!donationsResponse.ok) {
             throw new Error(`Failed to fetch donations: ${donationsResponse.status}`);
         }
