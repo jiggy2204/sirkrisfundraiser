@@ -62,7 +62,7 @@ app.post('/api/token', async (req, res) => {
 async function fetchTiltifyData(endpoint, accessToken) {
     const campaignId = 'your_campaign_id_here'; // Replace with your actual campaign ID
     try {
-        const response = await axios.get(`${TILTIFY_API_URL}/api/v5/campaigns/${campaignId}${endpoint}`, {
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${campaignId}${endpoint}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
