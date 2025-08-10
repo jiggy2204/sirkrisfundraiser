@@ -1,20 +1,57 @@
-// =================================================================
-//                 Client-Side (Front-End) Code - index.html
-// =================================================================
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiltify OAuth Example</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Beau+Rivage&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+    <title>Tiltify Donations Dashboard</title>
+        <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+
+    </style>
 </head>
-<body>
-    <h1>Tiltify OAuth Integration</h1>
-    <button id="connectBtn">Connect to Tiltify</button>
-    <div id="status"></div>
+<body>    
+    <nav class="navbar navbar-expand-lg w-75 mx-auto">
+        <a class="navbar-brand beau-rivage-regular" href="#">Top Hats Stack Up!</a>
 
+        <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
+        <div class="navbar-collapse collapse" id="navbarNav" style="">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="https://tilt.fyi/yxaZVPl2uc" target="_blank">Campaign Page</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://tilt.fyi/MuBnIMZDW8" target="_blank">Donation Page</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.twitch.tv/sir_kris" target="_blank">Twitch Channel</a>
+            </li>
+          </ul>
+        </div>
+    </nav>
+
+    <div class="w-100 d-flex flex-column" id="app-container">
+        <div id="preloadingBlock"></div>
+        <div id="loadingBlock">
+            <div id="spinner"></div>
+            <p style="font-size: 1.125rem; color: #4b5563;">Connecting to Tiltify...</p>
+        </div>
+        <div id="contentBlock" class="d-flex flex-column flex-lg-row align-items-lg-center w-auto justify-content-center p-5">
+            <div id="totalDonations" class="d-flex flex-column w-100 w-lg-75">
+                
+            </div>
+            <div id="donationList" class="d-flex flex-column w-100 w-lg-25">
+                
+            </div>
+        </div>
+    </div>
+    <script src="index.js"></script>
 </body>
-<script src="index.js"></script>
 </html>
