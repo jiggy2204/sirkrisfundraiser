@@ -116,7 +116,7 @@ app.get('/api/donations', async (req, res) => {
 
 // A catch-all route to serve your index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // IMPORTANT: For Vercel to work, you must export the Express app.
