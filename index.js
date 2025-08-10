@@ -6,7 +6,7 @@
 // Note: CLIENT_SECRET should NEVER be in client-side code.
 // The CLIENT_ID is public and safe to include.
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
-const REDIRECT_URI = 'http://localhost:3000/'; // We will now redirect to the same page
+const REDIRECT_URI = 'https://jiggy2204.github.io/sirkrisfundraiser/'; // We will now redirect to the same page
 const AUTHORIZE_URL = 'https://v5api.tiltify.com/oauth/authorize';
 
 const appContainer = document.getElementById('app-container');
