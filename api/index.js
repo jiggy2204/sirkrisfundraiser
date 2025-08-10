@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
-const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_ID = process.env.TILTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.TILTIFY_CLIENT_SECRET; // This must be a GitHub Secret!
 const CAMPAIGN_ID = '60eee269-a349-4d82-be22-6e6c2c56cf73';
 const TILTIFY_API_URL = 'https://v5api.tiltify.com';
