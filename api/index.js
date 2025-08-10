@@ -10,8 +10,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-// This line might not be needed if Vercel handles static assets separately
-// app.use(express.static(path.join(__dirname, 'public')));
+// This line now correctly points to the root directory (one level up from 'api')
+app.use(express.static(path.join(__dirname, '..')));
 
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
@@ -32,7 +32,7 @@ const TILTIFY_API_URL = 'https://v5api.tiltify.com';
 app.post('/api/token', async (req, res) => {
     const { code } = req.body;
     if (!code) {
-    return res.status(400).send({ error: 'Authorization code is missing.' });
+        return res.status(400).send({ error: 'Authorization code is missing.' });
     }
 
     try {
@@ -115,7 +115,7 @@ app.get('/api/donations', async (req, res) => {
 });
 
 // A catch-all route to serve your index.html
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
