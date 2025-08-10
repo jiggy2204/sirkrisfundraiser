@@ -69,7 +69,7 @@ async function renderDashboard() {
 
         // Show loading state
         if (preloadingBlock) {
-            preloadingBlock.style.display = 'block';
+            preloadingBlock.style.display = 'none';
         }
 
         // Fetch total donations
