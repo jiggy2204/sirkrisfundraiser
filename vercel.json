@@ -11,6 +11,10 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "/(.*\\.[A-z0-9]{1,5})",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
