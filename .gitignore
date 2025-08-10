@@ -1,0 +1,23 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Build Artifacts
+/build/
+/dist/
+*.class
+*.o
+
+# Log Files
+*.log
+
+# Sensitive Information (example)
+.env*
+
+# Node.js specific (example)
+/node_modules/
+npm-debug.log*
+
+# Python specific (example)
+__pycache__/
+*.pyc
