@@ -15,7 +15,7 @@ require('dotenv').config();
 // OAuth 2.0 Configuration
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
 const CLIENT_SECRET = process.env.TILTIFY_CLIENT_SECRET;
-const REDIRECT_URI = 'http://localhost:3000/';
+const REDIRECT_URI = 'https://jiggy2204.github.io/sirkrisfundraiser/';
 const TOKEN_URL = 'https://v5api.tiltify.com/oauth/token';
 
 // Tiltify API Base URLs
