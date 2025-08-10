@@ -49,7 +49,15 @@ async function getAccessToken() {
         return accessToken;
 
     } catch (error) {
-        console.error('Error fetching application access token:', error.response ? error.response.data : error.message);
+        console.error('Error fetching application access token:');
+        // This is the key change: log the full error response for debugging
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+        } else {
+            console.error('Error message:', error.message);
+        }
         throw new Error('Failed to get application access token.');
     }
 }
