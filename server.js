@@ -15,6 +15,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Assuming your index.
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
 const CLIENT_SECRET = process.env.TILTIFY_CLIENT_SECRET; // This must be a GitHub Secret!
+const CAMPAIGN_ID = '60eee269-a349-4d82-be22-6e6c2c56cf73';
 // IMPORTANT: This REDIRECT_URI must match the URL you provided in the client-side code and in Tiltify's app settings.
 const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app/';
 const TILTIFY_API_URL = 'https://v5api.tiltify.com';
@@ -60,9 +61,9 @@ app.post('/api/token', async (req, res) => {
  * In a real-world app, you might get this dynamically or from a config file.
  */
 async function fetchTiltifyData(endpoint, accessToken) {
-    const campaignId = 'your_campaign_id_here'; // Replace with your actual campaign ID
+    //const campaignId = 'your_campaign_id_here'; // Used constant at top
     try {
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${campaignId}${endpoint}`, {
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/${endpoint}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
