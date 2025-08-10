@@ -93,7 +93,7 @@ app.post('/api/token', async (req, res) => {
         }
 
         // IMPORTANT: The redirect_uri must exactly match the one used in the initial request!
-        const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app'; 
+        const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app/'; 
 
         const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
             grant_type: 'authorization_code',
