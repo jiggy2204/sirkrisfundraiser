@@ -60,10 +60,9 @@ app.post('/api/token', async (req, res) => {
  * We'll use a placeholder for the campaign ID for now.
  * In a real-world app, you might get this dynamically or from a config file.
  */
-async function fetchTiltifyData(endpoint, accessToken) {
-    //const campaignId = 'your_campaign_id_here'; // Used constant at top
+async function fetchTiltifyData(accessToken) {
     try {
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/${endpoint}`, {
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -76,10 +75,8 @@ async function fetchTiltifyData(endpoint, accessToken) {
 }
 
 /**
- * Endpoint to get the total donations for a campaign.
- * It expects the access token to be passed in a query parameter or header.
- * For simplicity, we are using the Authorization header.
- */
+ * Endpoint to get the total donations for a campaign by summing all donations.
+ */
 app.get('/api/donations/total', async (req, res) => {
     const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
 
@@ -88,8 +85,12 @@ app.get('/api/donations/total', async (req, res) => {
     }
 
     try {
-        const data = await fetchTiltifyData('/donations', accessToken);
-        res.json({ total_amount: data.data.total_amount.value });
+        const data = await fetchTiltifyData(accessToken);
+        // Calculate the total amount from the donations data
+        const totalAmount = data.data.reduce((sum, donation) => {
+            return sum + parseFloat(donation.amount.value);
+        }, 0);
+        res.json({ total_amount: totalAmount });
     } catch (error) {
         res.status(500).send({ error: `Failed to fetch total donations: ${error.message}` });
     }
@@ -107,7 +108,7 @@ app.get('/api/donations', async (req, res) => {
     }
 
     try {
-        const data = await fetchTiltifyData('/donations', accessToken);
+        const data = await fetchTiltifyData(accessToken);
         res.json(data);
     } catch (error) {
         res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
