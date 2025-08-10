@@ -1,5 +1,5 @@
 // =================================================================
-//                 Server-Side Logic
+//                 Server-Side Logic (Vercel-friendly)
 // =================================================================
 const express = require('express');
 const axios = require('axios');
@@ -10,7 +10,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Assuming your index.html and app.js are in a 'public' folder
+// This line might not be needed if Vercel handles static assets separately
+// app.use(express.static(path.join(__dirname, 'public')));
 
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
@@ -25,13 +26,13 @@ const TILTIFY_API_URL = 'https://v5api.tiltify.com';
 // =================================================================
 
 /**
- * Endpoint to exchange the authorization code for an access token.
- * This is the only place where the CLIENT_SECRET should be used.
- */
+ * Endpoint to exchange the authorization code for an access token.
+ * This is the only place where the CLIENT_SECRET should be used.
+ */
 app.post('/api/token', async (req, res) => {
     const { code } = req.body;
     if (!code) {
-        return res.status(400).send({ error: 'Authorization code is missing.' });
+    return res.status(400).send({ error: 'Authorization code is missing.' });
     }
 
     try {
@@ -56,10 +57,9 @@ app.post('/api/token', async (req, res) => {
 });
 
 /**
- * Helper function to fetch data from the Tiltify API using the provided access token.
- * We'll use a placeholder for the campaign ID for now.
- * In a real-world app, you might get this dynamically or from a config file.
- */
+ * Helper function to fetch data from the Tiltify API's donations endpoint.
+ * This is the single source of truth for donation data.
+ */
 async function fetchTiltifyData(accessToken) {
     try {
         const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
@@ -97,9 +97,8 @@ app.get('/api/donations/total', async (req, res) => {
 });
 
 /**
- * Endpoint to get recent donations for a campaign.
- * It expects the access token to be passed in a query parameter or header.
- */
+ * Endpoint to get recent donations for a campaign.
+ */
 app.get('/api/donations', async (req, res) => {
     const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
 
@@ -120,7 +119,5 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server listening on http://localhost:${port}`);
-});
+// IMPORTANT: For Vercel to work, you must export the Express app.
+module.exports = app;
