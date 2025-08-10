@@ -1,5 +1,6 @@
 // =================================================================
-//                 Server-Side Logic (Vercel-friendly)
+//                 Server-Side Logic (Vercel-friendly)
+//                 Now using Application Auth
 // =================================================================
 const express = require('express');
 const axios = require('axios');
@@ -10,61 +11,59 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-// This line now correctly points to the root directory (one level up from 'api')
 app.use(express.static(path.join(__dirname, '..')));
 
 // Tiltify OAuth 2.0 Credentials (from GitHub Secrets)
 const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
 const CLIENT_SECRET = process.env.TILTIFY_CLIENT_SECRET; // This must be a GitHub Secret!
 const CAMPAIGN_ID = '60eee269-a349-4d82-be22-6e6c2c56cf73';
-// IMPORTANT: This REDIRECT_URI must match the URL you provided in the client-side code and in Tiltify's app settings.
-const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app/';
 const TILTIFY_API_URL = 'https://v5api.tiltify.com';
 
+// Store access token and its expiry time for the application
+let accessToken = null;
+let tokenExpiry = null;
+
 // =================================================================
-//                 Server Endpoints
+//                 Server Functions
 // =================================================================
 
 /**
- * Endpoint to exchange the authorization code for an access token.
- * This is the only place where the CLIENT_SECRET should be used.
- */
-app.post('/api/token', async (req, res) => {
-    const { code } = req.body;
-    if (!code) {
-        return res.status(400).send({ error: 'Authorization code is missing.' });
+ * Get a valid application access token using Client Credentials flow
+ */
+async function getAccessToken() {
+    // Check if we have a valid token
+    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return accessToken;
     }
 
     try {
-        const tokenResponse = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
-            grant_type: 'authorization_code',
+        const response = await axios.post(`${TILTIFY_API_URL}/oauth/token`, {
+            grant_type: 'client_credentials',
             client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET,
-            redirect_uri: REDIRECT_URI,
-            code: code,
+            client_secret: CLIENT_SECRET
         });
-
-        // Tiltify's response should contain the access token
-        res.json(tokenResponse.data);
+        
+        accessToken = response.data.access_token;
+        // Set expiry to 1 minute before the actual expiry to be safe
+        tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
+        return accessToken;
 
     } catch (error) {
-        console.error('Token exchange failed:', error.response ? error.response.data : error.message);
-        res.status(500).send({
-            error: `Token exchange failed: ${error.response ? error.response.status : 'Network error'} - ${JSON.stringify(error.response ? error.response.data : 'No response data')}`,
-            details: 'Check server logs for more information'
-        });
+        console.error('Error fetching application access token:', error.response ? error.response.data : error.message);
+        throw new Error('Failed to get application access token.');
     }
-});
+}
 
 /**
- * Helper function to fetch data from the Tiltify API's donations endpoint.
- * This is the single source of truth for donation data.
- */
-async function fetchTiltifyData(accessToken) {
+ * Helper function to fetch data from the Tiltify API's donations endpoint.
+ * This is the single source of truth for donation data.
+ */
+async function fetchTiltifyData() {
     try {
+        const token = await getAccessToken(); // Get the application token
         const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
             headers: {
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${token}`
             }
         });
         return response.data;
@@ -74,18 +73,16 @@ async function fetchTiltifyData(accessToken) {
     }
 }
 
+// =================================================================
+//                 Server Endpoints
+// =================================================================
+
 /**
- * Endpoint to get the total donations for a campaign by summing all donations.
- */
+ * Endpoint to get the total donations for a campaign by summing all donations.
+ */
 app.get('/api/donations/total', async (req, res) => {
-    const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
-
-    if (!accessToken) {
-        return res.status(401).send({ error: 'Access token is missing.' });
-    }
-
     try {
-        const data = await fetchTiltifyData(accessToken);
+        const data = await fetchTiltifyData();
         // Calculate the total amount from the donations data
         const totalAmount = data.data.reduce((sum, donation) => {
             return sum + parseFloat(donation.amount.value);
@@ -97,26 +94,20 @@ app.get('/api/donations/total', async (req, res) => {
 });
 
 /**
- * Endpoint to get recent donations for a campaign.
- */
+ * Endpoint to get recent donations for a campaign.
+ */
 app.get('/api/donations', async (req, res) => {
-    const accessToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : req.query.accessToken;
-
-    if (!accessToken) {
-        return res.status(401).send({ error: 'Access token is missing.' });
-    }
-
     try {
-        const data = await fetchTiltifyData(accessToken);
+        const data = await fetchTiltifyData();
         res.json(data);
     } catch (error) {
         res.status(500).send({ error: `Failed to fetch donations: ${error.message}` });
     }
 });
 
-// A catch-all route to serve your index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
+// A catch-all route to serve all static files, including index.html, from the root directory
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', req.originalUrl));
 });
 
 // IMPORTANT: For Vercel to work, you must export the Express app.

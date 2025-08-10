@@ -8,82 +8,18 @@ const loadingBlock = document.getElementById('loadingBlock');
 const totalDonationsElement = document.getElementById('totalDonations');
 const donationListElement = document.getElementById('donationList');
 
-const CLIENT_ID = 'ebd80fb51f67410ec181bd052955d0d53519f310befea10888a8c130c339acdf';
-const REDIRECT_URI = 'https://sirkrisfundraiser.vercel.app/';
-
-// Tiltify OAuth 2.0 flow
-async function getAccessTokenFromCode(code) {
-    try {
-        const response = await fetch('/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ code: code })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Failed to exchange code for token: ${error.error}`);
-        }
-
-        const data = await response.json();
-        // Store the access token for later use
-        localStorage.setItem('tiltify_access_token', data.access_token);
-        return data.access_token;
-    } catch (error) {
-        console.error('Error getting access token:', error);
-        return null;
-    }
-}
-
-async function handleOAuthRedirect() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-
-    if (code) {
-        const accessToken = await getAccessTokenFromCode(code);
-        if (accessToken) {
-            // Remove the code from the URL for a cleaner look
-            window.history.replaceState({}, document.title, REDIRECT_URI);
-            return accessToken;
-        }
-    }
-    // If no code, check for a stored token
-    return localStorage.getItem('tiltify_access_token');
-}
-
-
 /**
  * Fetches and displays the total donation amount and a list of donations.
  */
 async function renderDashboard() {
     try {
-        const accessToken = await handleOAuthRedirect();
-
-        if (!accessToken) {
-            // If no token, redirect to Tiltify authorization page
-            const authUrl = `https://v5api.tiltify.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
-            window.location.href = authUrl;
-            return;
-        }
-
         // Show loading state
         if (preloadingBlock) {
-            preloadingBlock.style.display = 'none';
-        }
-
-                // Show loading state
-        if (loadingBlock) {
-            loadingBlock.style.display = 'none';
+            preloadingBlock.style.display = 'block';
         }
 
         // Fetch total donations
-        const totalResponse = await fetch('/api/donations/total', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+        const totalResponse = await fetch('/api/donations/total');
 
         if (!totalResponse.ok) {
             throw new Error(`Failed to fetch total donations: ${totalResponse.status}`);
@@ -91,19 +27,21 @@ async function renderDashboard() {
         const totalData = await totalResponse.json();
 
         // Fetch recent donations
-        const donationsResponse = await fetch('/api/donations', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+        const donationsResponse = await fetch('/api/donations');
 
         if (!donationsResponse.ok) {
             throw new Error(`Failed to fetch donations: ${donationsResponse.status}`);
         }
         const donationsData = await donationsResponse.json();
 
+        // Hide loading state and display data
         if (preloadingBlock) {
             preloadingBlock.style.display = 'none';
+        }
+
+        // Hide loading state and display data
+        if (loadingBlock) {
+            loadingBlock.style.display = 'none';
         }
 
         if (totalDonationsElement) {
