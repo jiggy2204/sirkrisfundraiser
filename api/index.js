@@ -109,6 +109,36 @@ app.get('/api/donations', async (req, res) => {
     }
 });
 
+/**
+ * Endpoint to get campaign goal.
+ * This endpoint no longer requires an access token from the client.
+ */
+app.get('/api/goal', async (req, res) => {
+    try {
+        const data = await getTiltifyAccessToken();
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}`,{
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if(response.data && response.data.data) {
+            const campaignData = response.data.data;
+            res.json({
+                goal: campaignData.goal ? parseFloat(campaignData.goal.value) : 0,
+                currency: campaignData.goal ? campaignData.goal.currency : 'USD',
+                amount_raised: campaignData.amount_raisedj ? parseFloat(campaignData.amount_raised.value) : 0,
+                total_amount_raised: campaignData.total_amount_raised ? parseFloat(campaignData.total_amount_raised.value) : 0
+            });
+        } else {
+            res.status(404).json({ error: 'Campaign data not found.' });
+        };
+        
+    } catch (err) {
+        res.status(500).send({ error: `Failed to fetch donation goal: ${err.message}`});
+    }
+})
+
 // A catch-all route to serve your index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
