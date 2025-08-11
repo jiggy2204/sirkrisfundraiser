@@ -34,8 +34,8 @@ class ProgressSVG {
      */
     generateSVGHTML() {
         return `
-            <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
-                <svg width="300" height="300" viewBox="0 0 1468.78 1468.78" style="position: absolute; top: 0; left: 0;">
+            <div style="position: relative; width: 750px; height: 750px; margin: 0 auto;">
+                <svg viewBox="0 0 1468.78 1468.78" style="position: absolute; top: 0; left: 0;">
                     <defs>
                         <!-- Clipping path that will animate from bottom to top -->
                         <clipPath id="progressClip">
@@ -52,11 +52,11 @@ class ProgressSVG {
                     </defs>
 
                     <!-- Background circle (always visible) -->
-                    <circle cx="734.39" cy="734.39" r="733.39" fill="#f0f0f0"/>
+                    <circle cx="734.39" cy="734.39" r="733.39" fill="rgba(255, 255, 255, 0.0)"/>
 
                     <!-- Color layer (clipped for progress) -->
                     <g clip-path="url(#progressClip)">
-                        <circle cx="734.39" cy="734.39" r="733.39" fill="url(#progressGradient)"/>
+                        <circle cx="734.39" cy="734.39" r="733.39" fill="#000"/>
                         ${this.generateColoredPaths()}
                     </g>
 
@@ -65,10 +65,9 @@ class ProgressSVG {
                 </svg>
                 
                 <!-- Progress text overlay -->
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%);
                             text-align: center; color: #333; font-weight: bold; font-size: 14px;">
                     <div id="progress-percentage">0%</div>
-                    <div style="font-size: 12px; margin-top: 4px;" id="progress-text">$0 / $0</div>
                 </div>
             </div>
         `;

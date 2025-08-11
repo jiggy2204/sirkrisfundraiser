@@ -43,10 +43,17 @@ body {
     font-size: 3em;
 }
 
+/* PROGRESS TEXT */
+#progress-percentage {  
+    font-size: 8rem;
+    color: #cfb346;
+}
+
 /* DONATION TOTAL STYLE */
-#totalDonations {
-    font-size: 10rem;
-    color: var(--mdGold);
+.totalText {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #fff;
 }
 
 /* DONOR LIST STYLE */

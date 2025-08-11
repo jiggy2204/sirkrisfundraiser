@@ -6,6 +6,7 @@ const preloadingBlock = document.getElementById('preloadingBlock');
 const loadingBlock = document.getElementById('loadingBlock');
 const contentBlock = document.getElementById('contentBlock');
 const donationListElement = document.getElementById('donationList');
+const totalDonationElement = document.getElementById('donationTotalText');
 
 // Initialize the progress SVG
 let progressSVG = null;
@@ -71,6 +72,12 @@ async function renderDashboard() {
         const goalAmount = goalData.goal || 1000;
         
         progressSVG.updateProgress(currentAmount, goalAmount);
+
+        // Create current donation total
+        const currDonationsHtml = `
+            <h2 class="totalText">Donation Total:</h2>
+            <h2 class="totalText">${currentAmount}</h2>
+        `
 
         // Fetch recent donations
         const donationsResponse = await fetch(`${BASE_API_URL}/api/donations`);
