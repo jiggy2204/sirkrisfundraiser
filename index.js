@@ -79,6 +79,8 @@ async function renderDashboard() {
             <h2 class="totalText">${currentAmount}</h2>
         `
 
+        totalDonationElement.innerHTML = currDonationsHtml;
+
         // Fetch recent donations
         const donationsResponse = await fetch(`${BASE_API_URL}/api/donations`);
         if (!donationsResponse.ok) {
