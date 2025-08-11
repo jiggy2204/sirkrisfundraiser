@@ -6,7 +6,7 @@ const preloadingBlock = document.getElementById('preloadingBlock');
 const loadingBlock = document.getElementById('loadingBlock');
 const contentBlock = document.getElementById('contentBlock');
 const donationListElement = document.getElementById('donationList');
-const totalDonationElement = document.getElementById('donationTotalText');
+const totalDonationElement = document.getElementById('donationTextTotal');
 
 // Initialize the progress SVG
 let progressSVG = null;
