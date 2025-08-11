@@ -74,12 +74,8 @@ async function renderDashboard() {
         progressSVG.updateProgress(currentAmount, goalAmount);
 
         // Create current donation total
-        const currDonationsHtml = `
-            <h2 class="totalText">Donation Total:</h2>
-            <h2 class="totalText">$${currentAmount}</h2>
-        `
         if(totalDonationElement){
-            totalDonationElement.innerHTML = currDonationsHtml;
+            totalDonationElement.textContent = `$${currentAmount}`;
         }
         
 
