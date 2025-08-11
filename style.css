@@ -51,14 +51,14 @@ body {
 /* PROGRESS TEXT */
 #progress-percentage {  
     font-size: 8rem;
-    color: #cfb346;
+    color: var(--mdGold);
 }
 
 /* DONATION TOTAL STYLE */
 .totalText {
     font-size: 3rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--whiteGold);
 }
 
 /* DONOR LIST STYLE */
