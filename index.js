@@ -72,14 +72,7 @@ async function renderDashboard() {
         const goalAmount = goalData.goal || 1000;
         
         progressSVG.updateProgress(currentAmount, goalAmount);
-
-        // Create current donation total
-        const currDonationsHtml = `
-            <h2 class="totalText">Donation Total:</h2>
-            <h2 class="totalText">${currentAmount}</h2>
-        `
-
-        totalDonationElement.innerHTML = currDonationsHtml;
+        
 
         // Fetch recent donations
         const donationsResponse = await fetch(`${BASE_API_URL}/api/donations`);
@@ -111,6 +104,15 @@ async function renderDashboard() {
             donationsHtml += '</ul>';
         } else {
             donationsHtml += '<p style="color: #6b7280;">No recent donations found.</p>';
+        }
+
+        // Create current donation total
+        const currDonationsHtml = `
+            <h2 class="totalText">Donation Total:</h2>
+            <h2 class="totalText">${currentAmount}</h2>
+        `
+        if(totalDonationElement){
+            totalDonationElement.innerHTML = currDonationsHtml;
         }
 
         if (donationListElement) {
