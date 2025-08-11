@@ -72,6 +72,15 @@ async function renderDashboard() {
         const goalAmount = goalData.goal || 1000;
         
         progressSVG.updateProgress(currentAmount, goalAmount);
+
+        // Create current donation total
+        const currDonationsHtml = `
+            <h2 class="totalText">Donation Total:</h2>
+            <h2 class="totalText">$${currentAmount}</h2>
+        `
+        if(totalDonationElement){
+            totalDonationElement.innerHTML = currDonationsHtml;
+        }
         
 
         // Fetch recent donations
@@ -90,7 +99,7 @@ async function renderDashboard() {
             donationsData.data.slice(0, 5).forEach(donation => {
                 const amount = parseFloat(donation.amount.value).toFixed(2);
                 const name = donation.donor_name || 'Anonymous';
-                const comment = donation.comment || 'No comment.';
+                const comment = donation.donor_comment || 'No comment';
                 donationsHtml += `
                     <li class="list-group-item">
                         <div class="d-flex align-items-center justify-content-between">
@@ -104,15 +113,6 @@ async function renderDashboard() {
             donationsHtml += '</ul>';
         } else {
             donationsHtml += '<p style="color: #6b7280;">No recent donations found.</p>';
-        }
-
-        // Create current donation total
-        const currDonationsHtml = `
-            <h2 class="totalText">Donation Total:</h2>
-            <h2 class="totalText">${currentAmount}</h2>
-        `
-        if(totalDonationElement){
-            totalDonationElement.innerHTML = currDonationsHtml;
         }
 
         if (donationListElement) {
