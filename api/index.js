@@ -1,5 +1,5 @@
 // =================================================================
-//                 Server-Side Logic (Vercel-friendly)
+//                 Server-Side Logic (Vercel-friendly)
 // =================================================================
 const express = require('express');
 const axios = require('axios');
@@ -74,7 +74,7 @@ async function fetchTiltifyData() {
 }
 
 // =================================================================
-//                 Server Endpoints
+//                 Server Endpoints
 // =================================================================
 
 // The /api/token endpoint is no longer needed as the server handles authentication internally.
@@ -115,29 +115,29 @@ app.get('/api/donations', async (req, res) => {
  */
 app.get('/api/goal', async (req, res) => {
     try {
-        const data = await getTiltifyAccessToken();
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}`,{
+        const token = await getTiltifyAccessToken(); // Fixed: assign to token variable
+        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}` // Fixed: use token variable
             }
         });
 
-        if(response.data && response.data.data) {
+        if (response.data && response.data.data) {
             const campaignData = response.data.data;
             res.json({
                 goal: campaignData.goal ? parseFloat(campaignData.goal.value) : 0,
                 currency: campaignData.goal ? campaignData.goal.currency : 'USD',
-                amount_raised: campaignData.amount_raisedj ? parseFloat(campaignData.amount_raised.value) : 0,
+                amount_raised: campaignData.amount_raised ? parseFloat(campaignData.amount_raised.value) : 0, // Fixed typo: amount_raisedj
                 total_amount_raised: campaignData.total_amount_raised ? parseFloat(campaignData.total_amount_raised.value) : 0
             });
         } else {
             res.status(404).json({ error: 'Campaign data not found.' });
-        };
+        }
         
     } catch (err) {
-        res.status(500).send({ error: `Failed to fetch donation goal: ${err.message}`});
+        res.status(500).send({ error: `Failed to fetch donation goal: ${err.message}` });
     }
-})
+});
 
 // A catch-all route to serve your index.html
 app.get('/', (req, res) => {
