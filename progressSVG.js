@@ -58,7 +58,7 @@ class ProgressSVG {
                     </defs>
 
                     <!-- Background circle (always visible) -->
-                    <circle cx="734.39" cy="734.39" r="733.39" fill=${bodyEl.hasAttribute(id) ? rgb(255, 255, 255) : rgba(255, 255, 255, 0.0)}"/>
+                    <circle cx="734.39" cy="734.39" r="733.39" fill="#fff"/>
 
                     <!-- Color layer (clipped for progress) -->
                     <g clip-path="url(#progressClip)">
