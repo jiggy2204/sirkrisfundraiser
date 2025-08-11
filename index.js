@@ -75,6 +75,7 @@ async function renderDashboard() {
 
         // Create current donation total
         if(totalDonationElement){
+            totalDonationElement.style.display = 'block';
             totalDonationElement.textContent = `$${currentAmount}`;
         }
         
