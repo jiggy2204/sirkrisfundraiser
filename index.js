@@ -93,7 +93,7 @@ async function renderDashboard(isInitialLoad = false) {
         // Fetch recent donations
         const donationsResponse = await fetch(`${BASE_API_URL}/api/donations`);
         if (!donationsResponse.ok) {
-            throw new Error(`Failed to fetch donations: ${donationsResponse.status}`);
+            throw new Error(`Failed to fetch donations: ${totalResponse.status}`);
         }
         const donationsData = await donationsResponse.json();
         
