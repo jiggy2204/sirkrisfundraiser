@@ -78,7 +78,7 @@ async function renderDashboard(isInitialLoad = false) {
 
         // Update the SVG progress with actual data
         const currentAmount = totalData.total_amount || 0;
-        const goalAmount = goalData.goal || 500;
+        const goalAmount = 500;
         
         // Only animate if the amount has changed
         if (currentAmount !== lastTotalAmount || isInitialLoad) {
