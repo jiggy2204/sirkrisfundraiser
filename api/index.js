@@ -40,7 +40,7 @@ async function getTiltifyAccessToken() {
 
         const data = tokenResponse.data;
         accessToken = data.access_token;
-        tokenExpiry = Date.now() = (data.expires_in * 1000) - (60 * 1000);
+        tokenExpiry = Date.now() + (data.expires_in * 1000) - (60 * 1000);
 
         return accessToken;
     } catch (error) {
@@ -51,16 +51,26 @@ async function getTiltifyAccessToken() {
 
 /**
  * Helper function to fetch data from the Tiltify API's donations endpoint.
+ * This now handles pagination to fetch all donations.
  */
 async function fetchTiltifyData() {
     try {
         const token = await getTiltifyAccessToken();
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        return response.data;
+        const allDonations = [];
+        let nextUrl = `${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}/donations?limit=100`; // Use limit=100 to get max per page
+
+        while (nextUrl) {
+            const response = await axios.get(nextUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            allDonations.push(...response.data.data);
+            nextUrl = response.data.links.next ? `${TILTIFY_API_URL}${response.data.links.next}` : null;
+        }
+
+        return { data: allDonations };
     } catch (error) {
         console.error(`Error fetching from Tiltify API: ${error.response ? error.response.data : error.message}`);
         throw new Error(`API fetch error: ${error.response ? error.response.status : 'Network error'}`);
@@ -77,12 +87,10 @@ async function fetchTiltifyData() {
 app.get('/api/donations/total', async (req, res) => {
     try {
         const data = await fetchTiltifyData();
-        console.log('Raw data from Tiltify API:', data);
         const totalAmount = data.data.reduce((sum, donation) => {
             return sum + parseFloat(donation.amount.value);
         }, 0);
 
-        console.log('Calculated total amount:', totalAmount);
         res.json({ total_amount: totalAmount, currency: 'USD' });
     } catch (error) {
         console.error('Error in /api/donations/total:', error.message);
