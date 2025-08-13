@@ -46,7 +46,7 @@ async function renderDashboard(isInitialLoad = false) {
         }
 
         // Fetch campaign goal data first
-        let goalData = { goal: 1000, currency: 'USD', amount_raised: 0 }; // Default values
+        let goalData = { goal: 500, currency: 'USD', amount_raised: 0 }; // Default values
         try {
             const goalResponse = await fetch(`${BASE_API_URL}/api/goal`);
             if (goalResponse.ok) {
