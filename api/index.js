@@ -104,27 +104,17 @@ app.get('/api/donations', async (req, res) => {
  * Endpoint to get campaign goal
  */
 app.get('/api/goal', async (req, res) => {
+    // Hardcoded campaign goal due to API failure.
+    // TODO: Revert this change once the Tiltify API is fixed.
     try {
-        const token = await getTiltifyAccessToken();
-        const response = await axios.get(`${TILTIFY_API_URL}/api/public/campaigns/${CAMPAIGN_ID}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+        res.json({
+            goal: 500,
+            currency: 'USD',
+            amount_raised: null,
+            total_amount_raised: null
         });
-
-        if (response.data && response.data.data) {
-            const campaignData = response.data.data;
-            res.json({
-                goal: campaignData.goal ? parseFloat(campaignData.goal.value) : 0,
-                currency: campaignData.goal ? campaignData.goal.currency : 'USD',
-                amount_raised: campaignData.amount_raised ? parseFloat(campaignData.amount_raised.value) : 0,
-                total_amount_raised: campaignData.total_amount_raised ? parseFloat(campaignData.total_amount_raised.value) : 0
-            });
-        } else {
-            res.status(404).json({ error: 'Campaign data not found.' });
-        }
-        
     } catch (error) {
+        // This catch block is for completeness, but the hardcoded goal should not fail.
         console.error('Error in /api/goal:', error.message);
         res.status(500).json({ error: `Failed to fetch donation goal: ${error.message}` });
     }
