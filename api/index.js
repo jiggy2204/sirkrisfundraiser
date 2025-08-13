@@ -100,26 +100,6 @@ app.get('/api/donations', async (req, res) => {
     }
 });
 
-/**
- * Endpoint to get campaign goal
- */
-app.get('/api/goal', async (req, res) => {
-    // Hardcoded campaign goal due to API failure.
-    // TODO: Revert this change once the Tiltify API is fixed.
-    try {
-        res.json({
-            goal: 500,
-            currency: 'USD',
-            amount_raised: null,
-            total_amount_raised: null
-        });
-    } catch (error) {
-        // This catch block is for completeness, but the hardcoded goal should not fail.
-        console.error('Error in /api/goal:', error.message);
-        res.status(500).json({ error: `Failed to fetch donation goal: ${error.message}` });
-    }
-});
-
 // Serve the main HTML file for root requests
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));

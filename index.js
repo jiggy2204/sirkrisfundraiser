@@ -44,10 +44,10 @@ async function renderDashboard(isInitialLoad = false) {
                 progressSVG.initialize();
             }
         }
-
-        // Hardcoded campaign goal due to API failure.
-        // TODO: Revert this change once the /api/goal endpoint is fixed.
-        let goalAmount = 500;
+        
+        // Hardcoded campaign goal to $500.
+        // The API call to fetch the goal is no longer needed.
+        const goalAmount = 500;
 
         // Fetch total donations
         const totalResponse = await fetch(`${BASE_API_URL}/api/donations/total`);
