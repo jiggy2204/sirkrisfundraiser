@@ -80,6 +80,8 @@ app.get('/api/donations/total', async (req, res) => {
         const totalAmount = data.data.reduce((sum, donation) => {
             return sum + parseFloat(donation.amount.value);
         }, 0);
+
+        console.log(totalAmount);
         res.json({ total_amount: totalAmount, currency: 'USD' });
     } catch (error) {
         console.error('Error in /api/donations/total:', error.message);
