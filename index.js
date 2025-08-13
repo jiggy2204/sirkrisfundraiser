@@ -13,7 +13,7 @@ let progressSVG = null;
 
 // Real-time update variables
 let updateInterval = null;
-const UPDATE_FREQUENCY = 30000; // 30 seconds
+const UPDATE_FREQUENCY = 10000; // 10 seconds
 let lastTotalAmount = 0;
 
 // Determine the base URL for API calls.
@@ -78,7 +78,7 @@ async function renderDashboard(isInitialLoad = false) {
 
         // Update the SVG progress with actual data
         const currentAmount = totalData.total_amount || 0;
-        const goalAmount = goalData.goal || 1000;
+        const goalAmount = goalData.goal || 500;
         
         // Only animate if the amount has changed
         if (currentAmount !== lastTotalAmount || isInitialLoad) {
