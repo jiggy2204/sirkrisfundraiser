@@ -51,10 +51,12 @@ async function renderDashboard(isInitialLoad = false) {
 
         // Fetch total donations
         const totalResponse = await fetch(`${BASE_API_URL}/api/donations/total`);
+        console.log('API call to /api/donations/total returned:', totalResponse);
         if (!totalResponse.ok) {
             throw new Error(`Failed to fetch total donations: ${totalResponse.status}`);
         }
         const totalData = await totalResponse.json();
+        console.log('Parsed total donations data:', totalData);
 
         // Hide loading state and show content only on initial load
         if (isInitialLoad) {
