@@ -40,7 +40,7 @@ async function getTiltifyAccessToken() {
 
         const data = tokenResponse.data;
         accessToken = data.access_token;
-        tokenExpiry = Date.now() + (data.expires_in * 1000) - (60 * 1000);
+        tokenExpiry = Date.now() = (data.expires_in * 1000) - (60 * 1000);
 
         return accessToken;
     } catch (error) {
@@ -77,11 +77,12 @@ async function fetchTiltifyData() {
 app.get('/api/donations/total', async (req, res) => {
     try {
         const data = await fetchTiltifyData();
+        console.log('Raw data from Tiltify API:', data);
         const totalAmount = data.data.reduce((sum, donation) => {
             return sum + parseFloat(donation.amount.value);
         }, 0);
 
-        console.log(totalAmount);
+        console.log('Calculated total amount:', totalAmount);
         res.json({ total_amount: totalAmount, currency: 'USD' });
     } catch (error) {
         console.error('Error in /api/donations/total:', error.message);
