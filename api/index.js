@@ -67,7 +67,7 @@ async function fetchTiltifyData() {
             });
 
             allDonations.push(...response.data.data);
-            nextUrl = response.data.links.next ? `${TILTIFY_API_URL}${response.data.links.next}` : null;
+            nextUrl = (response.data.links && response.data.links.next) ? `${TILTIFY_API_URL}${response.data.links.next}` : null;
         }
 
         return { data: allDonations };
