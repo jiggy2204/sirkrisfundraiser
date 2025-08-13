@@ -11,6 +11,11 @@ const totalDonationElement = document.getElementById('donationTextTotal');
 // Initialize the progress SVG
 let progressSVG = null;
 
+// Real-time update variables
+let updateInterval = null;
+const UPDATE_FREQUENCY = 30000; // 30 seconds
+let lastTotalAmount = 0;
+
 // Determine the base URL for API calls.
 const BASE_API_URL = window.location.origin;
 
@@ -19,23 +24,25 @@ const BASE_API_URL = window.location.origin;
  * This function now directly calls the server-side API endpoints
  * without needing a client-side access token.
  */
-async function renderDashboard() {
+async function renderDashboard(isInitialLoad = false) {
     try {
-        // Show loading state
-        if (preloadingBlock) {
-            preloadingBlock.style.display = 'block';
-        }
-        if (loadingBlock) {
-            loadingBlock.style.display = 'block';
-        }
-        if (contentBlock) {
-            contentBlock.style.display = 'none';
-        }
+        // Show loading state only on initial load
+        if (isInitialLoad) {
+            if (preloadingBlock) {
+                preloadingBlock.style.display = 'block';
+            }
+            if (loadingBlock) {
+                loadingBlock.style.display = 'block';
+            }
+            if (contentBlock) {
+                contentBlock.style.display = 'none';
+            }
 
-        // Initialize the SVG progress indicator
-        if (!progressSVG) {
-            progressSVG = new ProgressSVG('progress-svg-container');
-            progressSVG.initialize();
+            // Initialize the SVG progress indicator
+            if (!progressSVG) {
+                progressSVG = new ProgressSVG('progress-svg-container');
+                progressSVG.initialize();
+            }
         }
 
         // Fetch campaign goal data first
@@ -56,22 +63,33 @@ async function renderDashboard() {
         }
         const totalData = await totalResponse.json();
 
-        // Hide loading state and show content
-        if (preloadingBlock) {
-            preloadingBlock.style.display = 'none';
-        }
-        if (loadingBlock) {
-            loadingBlock.style.display = 'none';
-        }
-        if (contentBlock) {
-            contentBlock.style.display = 'flex';
+        // Hide loading state and show content only on initial load
+        if (isInitialLoad) {
+            if (preloadingBlock) {
+                preloadingBlock.style.display = 'none';
+            }
+            if (loadingBlock) {
+                loadingBlock.style.display = 'none';
+            }
+            if (contentBlock) {
+                contentBlock.style.display = 'flex';
+            }
         }
 
         // Update the SVG progress with actual data
         const currentAmount = totalData.total_amount || 0;
         const goalAmount = goalData.goal || 1000;
         
-        progressSVG.updateProgress(currentAmount, goalAmount);
+        // Only animate if the amount has changed
+        if (currentAmount !== lastTotalAmount || isInitialLoad) {
+            progressSVG.updateProgress(currentAmount, goalAmount);
+            lastTotalAmount = currentAmount;
+
+            // Show celebration effect for new donations (only after initial load)
+            if (!isInitialLoad && currentAmount > lastTotalAmount) {
+                showNewDonationEffect();
+            }
+        }
 
         // Create current donation total
         if(totalDonationElement){
@@ -118,28 +136,92 @@ async function renderDashboard() {
 
     } catch (error) {
         console.error('Error fetching data:', error);
-        if (preloadingBlock) {
-            preloadingBlock.style.display = 'block';
-            preloadingBlock.innerHTML = `
-                <p style="color: #ef4444; margin-bottom: 1rem;">❌ Error loading data: ${error.message}</p>
-                <button onclick="location.reload()" style="padding: 0.5rem 1rem; background: #4f46e5; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">Retry</button>
-            `;
-        }
-        if (loadingBlock) {
-            loadingBlock.style.display = 'none';
-        }
-        if (contentBlock) {
-            contentBlock.style.display = 'none';
+        // Only show error UI on initial load to avoid disrupting the user experience
+        if (isInitialLoad) {
+            if (preloadingBlock) {
+                preloadingBlock.style.display = 'block';
+                preloadingBlock.innerHTML = `
+                    <p style="color: #ef4444; margin-bottom: 1rem;">❌ Error loading data: ${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 0.5rem 1rem; background: #4f46e5; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">Retry</button>
+                `;
+            }
+            if (loadingBlock) {
+                loadingBlock.style.display = 'none';
+            }
+            if (contentBlock) {
+                contentBlock.style.display = 'none';
+            }
         }
     }
 }
 
 /**
- * Initialize the app - just load the dashboard directly
+ * Shows a brief visual effect when a new donation is received
  */
-function initializeApp() {
-    renderDashboard();
+function showNewDonationEffect() {
+    if (totalDonationElement) {
+        // Add a brief highlight effect
+        const originalColor = totalDonationElement.style.color;
+        totalDonationElement.style.color = '#16a34a';
+        totalDonationElement.style.transform = 'scale(1.1)';
+        totalDonationElement.style.transition = 'all 0.3s ease';
+        
+        setTimeout(() => {
+            totalDonationElement.style.color = originalColor;
+            totalDonationElement.style.transform = 'scale(1)';
+        }, 1000);
+    }
 }
+
+/**
+ * Starts the real-time update polling
+ */
+function startRealTimeUpdates() {
+    // Clear any existing interval
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+    
+    // Set up periodic updates
+    updateInterval = setInterval(() => {
+        renderDashboard(false); // false = not initial load
+    }, UPDATE_FREQUENCY);
+    
+    console.log(`Real-time updates started (every ${UPDATE_FREQUENCY/1000} seconds)`);
+}
+
+/**
+ * Stops the real-time update polling
+ */
+function stopRealTimeUpdates() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+        console.log('Real-time updates stopped');
+    }
+}
+
+/**
+ * Initialize the app - load the dashboard and start real-time updates
+ */
+async function initializeApp() {
+    await renderDashboard(true); // true = initial load
+    startRealTimeUpdates();
+}
+
+// Clean up interval when page is about to unload
+window.addEventListener('beforeunload', () => {
+    stopRealTimeUpdates();
+});
+
+// Handle page visibility changes (pause updates when tab is not visible)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopRealTimeUpdates();
+    } else {
+        startRealTimeUpdates();
+    }
+});
 
 // Initialize the app when the DOM is ready
 document.addEventListener('DOMContentLoaded', initializeApp);
