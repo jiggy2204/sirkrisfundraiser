@@ -45,16 +45,9 @@ async function renderDashboard(isInitialLoad = false) {
             }
         }
 
-        // Fetch campaign goal data first
-        let goalData = { goal: 500, currency: 'USD', amount_raised: 0 }; // Default values
-        try {
-            const goalResponse = await fetch(`${BASE_API_URL}/api/goal`);
-            if (goalResponse.ok) {
-                goalData = await goalResponse.json();
-            }
-        } catch (error) {
-            console.warn('Failed to fetch goal data, using defaults:', error);
-        }
+        // Hardcoded campaign goal due to API failure.
+        // TODO: Revert this change once the /api/goal endpoint is fixed.
+        let goalAmount = 500;
 
         // Fetch total donations
         const totalResponse = await fetch(`${BASE_API_URL}/api/donations/total`);
@@ -78,7 +71,6 @@ async function renderDashboard(isInitialLoad = false) {
 
         // Update the SVG progress with actual data
         const currentAmount = totalData.total_amount || 0;
-        const goalAmount = 500;
         
         // Only animate if the amount has changed
         if (currentAmount !== lastTotalAmount || isInitialLoad) {
